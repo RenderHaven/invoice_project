@@ -18,7 +18,7 @@ export default function App() {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const checkServer = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/health`, { method: 'GET', headers: { 'Accept': 'application/json' } });
@@ -46,7 +46,7 @@ export default function App() {
       <div className="flex h-screen items-center justify-center bg-surface p-6 text-center">
         <div className="max-w-md space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose/10 text-rose">
-             <ServerOff size={32} />
+            <ServerOff size={32} />
           </div>
           <h1 className="text-2xl font-bold text-ink">Server Not Running</h1>
           <p className="text-slate">We cannot connect to the backend server. Please make sure the API is running and try again.</p>
@@ -72,24 +72,24 @@ export default function App() {
           !hasToken() ? (
             <Navigate to="/login" replace />
           ) : (
-          <AppLayout>
-            <Routes>
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="customers" element={<CustomersPage />} />
-              <Route path="vendors" element={<VendorsPage />} />
-              <Route path="items" element={<ItemsPage />} />
-              <Route path="categories" element={<CategoriesPage />} />
-              <Route path="quotations" element={<QuotationsPage />} />
-              <Route path="invoices" element={<InvoicesPage />} />
-              <Route path="payments" element={<PaymentsPage />} />
-              <Route path="expenses" element={<ExpensesPage />} />
-              <Route path="gst" element={<GstPage />} />
-              <Route path="documents" element={<DocumentsPage />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </AppLayout>
+            <AppLayout>
+              <Routes>
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="customers" element={<CustomersPage />} />
+                <Route path="vendors" element={<VendorsPage />} />
+                <Route path="items" element={<ItemsPage />} />
+                <Route path="categories" element={<CategoriesPage />} />
+                <Route path="quotations" element={<QuotationsPage />} />
+                <Route path="invoices" element={<InvoicesPage />} />
+                <Route path="payments" element={<PaymentsPage />} />
+                <Route path="expenses" element={<ExpensesPage />} />
+                <Route path="gst" element={<GstPage />} />
+                <Route path="documents" element={<DocumentsPage />} />
+                <Route path="users" element={<UserManagementPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </AppLayout>
           )
         }
       />
