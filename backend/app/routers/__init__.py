@@ -1,0 +1,18 @@
+from app.routers import (
+    auth,
+    organization,
+    addresses,
+    bank_accounts,
+    customers,
+    vendors,
+    categories,
+    items,
+    quotations,
+    invoices,
+    payments,
+    expenses,
+    dashboard,
+    gst,
+    documents,
+    users,
+)

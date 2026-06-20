@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
-import type { ReactNode } from 'react';
+import { X } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { StatusTone } from '../types';
 
 export function Button({
@@ -170,6 +171,134 @@ export function Field({ label, children }: { label: string; children: ReactNode 
       <span className="label mb-1.5 block">{label}</span>
       {children}
     </label>
+  );
+}
+
+export function Modal({
+  open,
+  title,
+  description,
+  onClose,
+  children,
+  footer,
+  wide = false,
+}: {
+  open: boolean;
+  title: string;
+  description?: string;
+  onClose: () => void;
+  children: ReactNode;
+  footer?: ReactNode;
+  wide?: boolean;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-ink/40 p-4 md:p-8">
+      <div
+        className={clsx(
+          'relative w-full rounded-lg border border-line bg-white shadow-soft',
+          wide ? 'max-w-3xl' : 'max-w-lg',
+        )}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+          <div>
+            <h2 className="text-lg font-semibold text-ink">{title}</h2>
+            {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
+          </div>
+          <button className="rounded p-1.5 text-slate hover:bg-surface" aria-label="Close" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+        <div className="px-5 py-4">{children}</div>
+        {footer ? <div className="flex justify-end gap-2 border-t border-line px-5 py-4">{footer}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+export function Alert({ tone = 'info', children }: { tone?: StatusTone; children: ReactNode }) {
+  return (
+    <p
+      className={clsx(
+        'rounded border px-3 py-2 text-sm',
+        tone === 'success' && 'border-emerald/20 bg-emerald/10 text-emerald',
+        tone === 'warning' && 'border-amber/20 bg-amber/10 text-amber',
+        tone === 'danger' && 'border-rose/20 bg-rose/10 text-rose',
+        tone === 'info' && 'border-sky/20 bg-sky/10 text-sky',
+        tone === 'neutral' && 'border-line bg-surface text-slate',
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+export function useToast() {
+  const [toast, setToast] = useState<{ tone: StatusTone; message: string } | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  function show(tone: StatusTone, message: string) {
+    setToast({ tone, message });
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setToast(null), 3800);
+  }
+
+  const node = toast ? (
+    <div className="fixed bottom-5 right-5 z-[70] w-full max-w-sm">
+      <Alert tone={toast.tone}>{toast.message}</Alert>
+    </div>
+  ) : null;
+
+  return { show, toast: node };
+}
+
+export function Spinner({ label = 'Loading...' }: { label?: string }) {
+  return (
+    <div className="flex items-center justify-center gap-3 py-12 text-sm text-muted">
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-ink" />
+      {label}
+    </div>
+  );
+}
+
+export function EmptyState({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-line bg-surface py-12 text-center">
+      <p className="font-semibold text-ink">{title}</p>
+      {hint ? <p className="max-w-md text-sm text-muted">{hint}</p> : null}
+      {action ? <div className="mt-2">{action}</div> : null}
+    </div>
+  );
+}
+
+export function SearchInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 rounded border border-line bg-white px-3 py-2 focus-within:border-ink focus-within:ring-2 focus-within:ring-ink/20">
+      <input
+        className="w-full bg-transparent text-sm outline-none"
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </div>
   );
 }
 

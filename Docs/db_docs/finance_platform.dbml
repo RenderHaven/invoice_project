@@ -1,5 +1,18 @@
 Project FinanceBillingPlatform {
   database_type: "PostgreSQL"
+  Note: '''
+    Version 2.0
+    
+    Role Definitions:
+    - admin   : Full access + user management + company edit/delete
+    - manager : Full operational access (read/write invoices, quotations,
+                customers, vendors, expenses, etc.)
+                Can VIEW company profile and users, cannot EDIT/DELETE them
+    - other   : Read-only access to all modules. No create/edit/delete.
+    
+    On org registration: one admin user is auto-created with org email
+    and temporary password "Test@1234"
+  '''
 }
 
 Table organizations {
@@ -56,9 +69,12 @@ Table users {
   organization_id uuid
 
   role varchar
+  // admin   : full access + user management + company edit/delete
+  // manager : full operational access, view-only for company & users
+  // other   : read-only across all modules
 
   name varchar
-  email varchar
+  email varchar [unique]
   password_hash varchar
 
   is_active boolean

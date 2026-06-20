@@ -2,7 +2,7 @@
 
 # Finance, Accounting & Billing Platform API
 
-Version: 1.0
+Version: 2.0
 
 ---
 
@@ -12,6 +12,7 @@ This document defines the API contract for the Finance, Accounting & Billing Pla
 
 The API supports:
 
+* Authentication & User Management
 * Organization Management
 * Customer Management
 * Vendor Management
@@ -89,20 +90,40 @@ GET /customers?page=1&limit=20&search=abc&sort=created_at&order=desc
 
 ---
 
+# User Roles
+
+Three roles exist in the system. All data is scoped to the user's organization.
+
+| Role      | Description |
+| --------- | ----------- |
+| `admin`   | Full system access including user management and company profile edit/delete |
+| `manager` | Full operational access (invoices, quotations, customers, expenses, etc.). Can **view** company details and users but **cannot** edit/delete company profile or manage users |
+| `other`   | Read-only access to all modules. Cannot create, edit, or delete anything |
+
+### Auto-created Admin
+
+When an organization is registered via `POST /auth/register`, a default **admin** user is automatically created using the organization email and a temporary password of `Test@1234`. The admin should change this password after first login.
+
+---
+
 # Authentication
 
-## Login
+## Register Organization
 
 ```http
-POST /auth/login
+POST /auth/register
 ```
+
+Creates a new organization and an admin user in one step.
 
 ### Request
 
 ```json
 {
-  "email": "admin@example.com",
-  "password": "password"
+  "org_name": "My Business Pvt Ltd",
+  "name": "Vikram",
+  "email": "vikram@mybusiness.com",
+  "password": "Test@1234"
 }
 ```
 
@@ -115,6 +136,131 @@ POST /auth/login
     "token": "jwt-token",
     "user": {}
   }
+}
+```
+
+---
+
+## Login
+
+```http
+POST /auth/login
+```
+
+### Request
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "Test@1234"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "token": "jwt-token",
+    "user": {}
+  }
+}
+```
+
+---
+
+## Get Current User
+
+```http
+GET /auth/me
+```
+
+---
+
+## Change Password
+
+Available to **all authenticated users** to change their own password.
+
+```http
+PUT /auth/change-password
+```
+
+### Request
+
+```json
+{
+  "current_password": "Test@1234",
+  "new_password": "MyNewSecure@2024"
+}
+```
+
+---
+
+# User Management
+
+All endpoints in this section require **admin** role.
+
+## List Users
+
+```http
+GET /users
+```
+
+Returns all users in the current organization.
+
+---
+
+## Get User
+
+```http
+GET /users/{id}
+```
+
+---
+
+## Create User
+
+```http
+POST /users
+```
+
+### Request
+
+```json
+{
+  "name": "Riya Sharma",
+  "email": "riya@mybusiness.com",
+  "password": "Test@1234",
+  "role": "manager"
+}
+```
+
+---
+
+## Delete User
+
+```http
+DELETE /users/{id}
+```
+
+Admin cannot delete themselves.
+
+---
+
+## Reset User Password (Admin)
+
+Admin can reset any user's password directly.
+
+```http
+PUT /users/{id}/reset-password
+```
+
+### Request
+
+```json
+{
+  "new_password": "NewTemp@1234"
 }
 ```
 
