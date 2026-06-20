@@ -1,5 +1,5 @@
 import { Check, FileText, Pencil, Plus, RefreshCw, Send, Trash2, Upload, X } from 'lucide-react';
-import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
 import { endpoints } from '../api/endpoints';
 import {
   Alert,
@@ -850,6 +850,36 @@ export function DocumentsPage() {
   // tracks which row action is in-flight: { id, action } so we can show a spinner on that exact button
   const [busy, setBusy] = useState<{ id: string; action: 'extract' | 'reprocess' } | null>(null);
 
+  // Review Modal State
+  const { customers } = useCustomerLookup();
+  const { data: items } = useApi<ApiItem[]>(() => endpoints.items(), []);
+  const { data: vendors } = useApi<ApiParty[]>(() => endpoints.vendors(), []);
+  const { data: categories } = useApi<ApiCategory[]>(() => endpoints.categories('expense'), []);
+
+  const [reviewId, setReviewId] = useState<string | null>(null);
+  const [reviewDocType, setReviewDocType] = useState<string>('');
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [savingReview, setSavingReview] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewRawData, setReviewRawData] = useState<any>(null);
+  const [reprocessingReview, setReprocessingReview] = useState(false);
+
+  const [isNewParty, setIsNewParty] = useState(false);
+  const [newParty, setNewParty] = useState({ name: '', email: '', phone: '', gst_number: '' });
+
+  // Form states for Review Modal
+  const [invCustomerId, setInvCustomerId] = useState('');
+  const [invDate, setInvDate] = useState(today());
+  const [invNotes, setInvNotes] = useState('');
+  const [invRows, setInvRows] = useState<LineRow[]>([{ ...blankRow }]);
+
+  const [expVendorId, setExpVendorId] = useState('');
+  const [expCategoryId, setExpCategoryId] = useState('');
+  const [expDate, setExpDate] = useState(today());
+  const [expAmount, setExpAmount] = useState('');
+  const [expGst, setExpGst] = useState('');
+  const [expDesc, setExpDesc] = useState('');
+
   async function handleUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -883,6 +913,186 @@ export function DocumentsPage() {
       show('danger', err instanceof Error ? err.message : 'Action failed');
     } finally {
       setBusy(null);
+    }
+  }
+
+  async function handleReview(doc: ApiDocument) {
+    setReviewId(doc.id);
+    setReviewDocType(doc.document_type || 'invoice');
+    setReviewLoading(true);
+    setReviewError(null);
+    try {
+      const res = await endpoints.documentExtraction(doc.id);
+      const extracted = (res as any).extracted_data || {};
+      setReviewRawData(extracted);
+      
+      const partyData = doc.document_type === 'invoice' || doc.document_type === 'quotation' 
+        ? extracted.customer 
+        : extracted.vendor;
+      
+      if (partyData) {
+        setNewParty({
+          name: partyData.name || '',
+          email: partyData.email || '',
+          phone: partyData.phone || '',
+          gst_number: partyData.gst_number || ''
+        });
+      } else {
+        setNewParty({ name: '', email: '', phone: '', gst_number: '' });
+      }
+      setIsNewParty(false);
+
+      if (doc.document_type === 'invoice' || doc.document_type === 'quotation') {
+        setInvCustomerId('');
+        setInvDate(today());
+        setInvNotes(extracted.notes || '');
+        if (extracted.line_items?.length > 0) {
+           setInvRows(extracted.line_items.map((li: any) => ({
+              item_id: '',
+              description: li.description || '',
+              quantity: String(li.quantity || 1),
+              unit_price: String(li.unit_price || 0),
+              gst_rate: String(li.gst_rate || 0),
+           })));
+        } else {
+           setInvRows([{...blankRow}]);
+        }
+      } else {
+        setExpVendorId('');
+        setExpCategoryId('');
+        setExpDate(today());
+        setExpAmount(String(extracted.total_amount || ''));
+        setExpGst(String(extracted.gst_amount || ''));
+        setExpDesc(extracted.notes || '');
+      }
+    } catch (err) {
+      show('danger', 'Could not load extraction data');
+      setReviewId(null);
+    } finally {
+      setReviewLoading(false);
+    }
+  }
+
+  async function handleReprocessInReview() {
+    if (!reviewId) return;
+    setReprocessingReview(true);
+    setReviewError(null);
+    try {
+      await endpoints.reprocessDocument(reviewId);
+      const res = await endpoints.documentExtraction(reviewId);
+      const extracted = (res as any).extracted_data || {};
+      setReviewRawData(extracted);
+      
+      const partyData = reviewDocType === 'invoice' || reviewDocType === 'quotation' 
+        ? extracted.customer 
+        : extracted.vendor;
+      
+      if (partyData) {
+        setNewParty({
+          name: partyData.name || '',
+          email: partyData.email || '',
+          phone: partyData.phone || '',
+          gst_number: partyData.gst_number || ''
+        });
+      } else {
+        setNewParty({ name: '', email: '', phone: '', gst_number: '' });
+      }
+      setIsNewParty(false);
+
+      if (reviewDocType === 'invoice' || reviewDocType === 'quotation') {
+        setInvNotes(extracted.notes || '');
+        if (extracted.line_items?.length > 0) {
+           setInvRows(extracted.line_items.map((li: any) => ({
+              item_id: '',
+              description: li.description || '',
+              quantity: String(li.quantity || 1),
+              unit_price: String(li.unit_price || 0),
+              gst_rate: String(li.gst_rate || 0),
+           })));
+        } else {
+           setInvRows([{...blankRow}]);
+        }
+      } else {
+        setExpAmount(String(extracted.total_amount || ''));
+        setExpGst(String(extracted.gst_amount || ''));
+        setExpDesc(extracted.notes || '');
+      }
+      show('success', 'Extraction complete');
+      reload();
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : 'Reprocessing failed');
+    } finally {
+      setReprocessingReview(false);
+    }
+  }
+
+  async function submitReview(e: FormEvent) {
+    e.preventDefault();
+    setSavingReview(true);
+    setReviewError(null);
+    try {
+      let finalCustomerId = invCustomerId;
+      let finalVendorId = expVendorId;
+
+      if (isNewParty) {
+        if (!newParty.name) throw new Error('Business name is required for new party');
+        const type = (reviewDocType === 'invoice' || reviewDocType === 'quotation') ? 'customer' : 'vendor';
+        
+        if (type === 'customer') {
+          const created = await endpoints.createCustomer({
+            type: 'customer',
+            business_name: newParty.name,
+            email: newParty.email || undefined,
+            phone: newParty.phone || undefined,
+            gst_number: newParty.gst_number || undefined,
+          });
+          finalCustomerId = created.id;
+        } else {
+          const created = await endpoints.createVendor({
+            type: 'vendor',
+            business_name: newParty.name,
+            email: newParty.email || undefined,
+            phone: newParty.phone || undefined,
+            gst_number: newParty.gst_number || undefined,
+          });
+          finalVendorId = created.id;
+        }
+      }
+
+      if (reviewDocType === 'invoice') {
+        if (!finalCustomerId) throw new Error('Select or create a customer');
+        if (invRows.length === 0) throw new Error('Add at least one line item');
+        await endpoints.createInvoice({
+          customer_id: finalCustomerId,
+          invoice_date: invDate,
+          notes: invNotes,
+          line_items: rowsToLineItems(invRows)
+        });
+      } else if (reviewDocType === 'quotation') {
+        if (!finalCustomerId) throw new Error('Select or create a customer');
+        if (invRows.length === 0) throw new Error('Add at least one line item');
+        await endpoints.createQuotation({
+          customer_id: finalCustomerId,
+          quotation_date: invDate,
+          notes: invNotes,
+          line_items: rowsToLineItems(invRows)
+        });
+      } else {
+        await endpoints.createExpense({
+          vendor_id: finalVendorId || null,
+          category_id: expCategoryId || null,
+          expense_date: expDate,
+          amount: Number(expAmount || 0),
+          gst_amount: Number(expGst || 0),
+          description: expDesc
+        });
+      }
+      show('success', 'Created successfully from extraction');
+      setReviewId(null);
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : 'Could not save');
+    } finally {
+      setSavingReview(false);
     }
   }
 
@@ -967,14 +1177,25 @@ export function DocumentsPage() {
                 const rowBusy = busy?.id === row.id;
                 return writable ? (
                   <div className="flex items-center justify-end gap-2">
-                    <Button
-                      variant="secondary"
-                      className="min-h-8 px-2 py-1 text-xs"
-                      disabled={rowBusy}
-                      onClick={() => runRow(row.id, 'extract', 'Extraction complete', () => endpoints.extractDocument(row.id))}
-                    >
-                      {extracting ? <><InlineSpinner className="h-3.5 w-3.5" />Extracting…</> : 'Extract'}
-                    </Button>
+                    {row.status === 'completed' ? (
+                      <Button
+                        variant="secondary"
+                        className="min-h-8 px-2 py-1 text-xs"
+                        disabled={rowBusy}
+                        onClick={() => handleReview(row)}
+                      >
+                        Review
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="secondary"
+                        className="min-h-8 px-2 py-1 text-xs"
+                        disabled={rowBusy}
+                        onClick={() => runRow(row.id, 'extract', 'Extraction complete', () => endpoints.extractDocument(row.id))}
+                      >
+                        {extracting ? <><InlineSpinner className="h-3.5 w-3.5" />Extracting…</> : 'Extract'}
+                      </Button>
+                    )}
                     <button
                       className="rounded border border-line p-2 text-slate hover:bg-surface disabled:opacity-40"
                       aria-label="Reprocess"
@@ -998,6 +1219,115 @@ export function DocumentsPage() {
           ]}
         />
       )}
+
+      <Modal
+        open={!!reviewId}
+        wide={true}
+        onClose={() => setReviewId(null)}
+        title="Review & Create"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setReviewId(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={handleReprocessInReview} disabled={reprocessingReview || reviewLoading}>
+              {reprocessingReview ? <><InlineSpinner className="mr-2 h-4 w-4" />Extracting...</> : <><RefreshCw className="mr-2 h-4 w-4" />Extract Again</>}
+            </Button>
+            <Button type="submit" form="review-form" disabled={reviewLoading || reprocessingReview}>
+              {savingReview ? 'Saving...' : `Create ${reviewDocType.charAt(0).toUpperCase() + reviewDocType.slice(1)}`}
+            </Button>
+          </>
+        }
+      >
+        {reviewLoading ? (
+          <div className="py-10 text-center"><Spinner /></div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+            <div className="overflow-auto rounded border border-line bg-surface p-4" style={{ maxHeight: '60vh' }}>
+              <h3 className="mb-2 text-sm font-semibold text-ink">Extracted Data</h3>
+              <pre className="text-xs text-slate whitespace-pre-wrap font-mono">
+                {reviewRawData ? JSON.stringify(reviewRawData, null, 2) : 'No data'}
+              </pre>
+            </div>
+            <div className="overflow-auto" style={{ maxHeight: '60vh' }}>
+              <form id="review-form" className="space-y-4 p-1" onSubmit={submitReview}>
+                {(reviewDocType === 'invoice' || reviewDocType === 'quotation') ? (
+                  <>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="md:col-span-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="label">Customer</span>
+                          <label className="flex items-center gap-1 text-xs text-sky cursor-pointer hover:underline">
+                            <input type="checkbox" className="hidden" checked={isNewParty} onChange={(e) => setIsNewParty(e.target.checked)} />
+                            {isNewParty ? 'Select existing' : '+ Create new customer'}
+                          </label>
+                        </div>
+                        {isNewParty ? (
+                          <div className="space-y-2 rounded border border-line bg-surface p-2">
+                            <input className="field text-sm" placeholder="Business Name" value={newParty.name} onChange={(e) => setNewParty({...newParty, name: e.target.value})} required={isNewParty} />
+                            <div className="grid grid-cols-2 gap-2">
+                              <input className="field text-xs" placeholder="Email" type="email" value={newParty.email} onChange={(e) => setNewParty({...newParty, email: e.target.value})} />
+                              <input className="field text-xs" placeholder="Phone" value={newParty.phone} onChange={(e) => setNewParty({...newParty, phone: e.target.value})} />
+                            </div>
+                            <input className="field text-xs" placeholder="GST Number" value={newParty.gst_number} onChange={(e) => setNewParty({...newParty, gst_number: e.target.value})} />
+                          </div>
+                        ) : (
+                          <select className="field" value={invCustomerId} onChange={(e) => setInvCustomerId(e.target.value)} required={!isNewParty}>
+                            <option value="">Select customer</option>
+                            {customers.map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
+                          </select>
+                        )}
+                      </div>
+                      <Field label="Date"><input className="field" type="date" value={invDate} onChange={(e) => setInvDate(e.target.value)} required /></Field>
+                    </div>
+                    <LineItemsEditor rows={invRows} setRows={setInvRows} items={items ?? []} />
+                    <Field label="Notes"><textarea className="field" rows={2} value={invNotes} onChange={(e) => setInvNotes(e.target.value)} /></Field>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="md:col-span-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="label">Vendor</span>
+                          <label className="flex items-center gap-1 text-xs text-sky cursor-pointer hover:underline">
+                            <input type="checkbox" className="hidden" checked={isNewParty} onChange={(e) => setIsNewParty(e.target.checked)} />
+                            {isNewParty ? 'Select existing' : '+ Create new vendor'}
+                          </label>
+                        </div>
+                        {isNewParty ? (
+                          <div className="space-y-2 rounded border border-line bg-surface p-2">
+                            <input className="field text-sm" placeholder="Business Name" value={newParty.name} onChange={(e) => setNewParty({...newParty, name: e.target.value})} required={isNewParty} />
+                            <div className="grid grid-cols-2 gap-2">
+                              <input className="field text-xs" placeholder="Email" type="email" value={newParty.email} onChange={(e) => setNewParty({...newParty, email: e.target.value})} />
+                              <input className="field text-xs" placeholder="Phone" value={newParty.phone} onChange={(e) => setNewParty({...newParty, phone: e.target.value})} />
+                            </div>
+                            <input className="field text-xs" placeholder="GST Number" value={newParty.gst_number} onChange={(e) => setNewParty({...newParty, gst_number: e.target.value})} />
+                          </div>
+                        ) : (
+                          <select className="field" value={expVendorId} onChange={(e) => setExpVendorId(e.target.value)}>
+                            <option value="">No vendor</option>
+                            {(vendors ?? []).map((v) => <option key={v.id} value={v.id}>{v.business_name}</option>)}
+                          </select>
+                        )}
+                      </div>
+                      <Field label="Category">
+                        <select className="field" value={expCategoryId} onChange={(e) => setExpCategoryId(e.target.value)}>
+                          <option value="">No category</option>
+                          {(categories ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                      </Field>
+                      <Field label="Date"><input className="field" type="date" value={expDate} onChange={(e) => setExpDate(e.target.value)} required /></Field>
+                      <Field label="Amount"><input className="field" type="number" step="0.01" value={expAmount} onChange={(e) => setExpAmount(e.target.value)} required /></Field>
+                      <Field label="GST Amount"><input className="field" type="number" step="0.01" value={expGst} onChange={(e) => setExpGst(e.target.value)} /></Field>
+                    </div>
+                    <Field label="Description"><textarea className="field" rows={2} value={expDesc} onChange={(e) => setExpDesc(e.target.value)} /></Field>
+                  </>
+                )}
+                {reviewError ? <Alert tone="danger">{reviewError}</Alert> : null}
+              </form>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       {toast}
     </>
   );
