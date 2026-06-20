@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quotations Management - FinCorp Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dae2fd",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#d5e3fd",
+                        "surface-container-highest": "#e0e3e5",
+                        "primary-container": "#131b2e",
+                        "primary": "#000000",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface-tint": "#565e74",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "secondary": "#515f74",
+                        "outline": "#76777d",
+                        "on-background": "#191c1e",
+                        "tertiary": "#000000",
+                        "on-primary-container": "#7c839b",
+                        "background": "#f7f9fb",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-secondary-container": "#57657b",
+                        "tertiary-container": "#002113",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-tertiary-container": "#009668",
+                        "surface-container": "#eceef0",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#bec6e0",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c6c6cd",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed-dim": "#bec6e0",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e0e3e5",
+                        "on-surface-variant": "#45464d",
+                        "on-primary-fixed": "#131b2e",
+                        "surface": "#f7f9fb",
+                        "on-tertiary-fixed": "#002113",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "inverse-surface": "#2d3133",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-surface": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "lg": "24px",
+                        "container-max": "1440px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "data-tabular": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "data-tabular": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface flex flex-col border-r border-outline-variant z-50 hidden md:flex">
+<!-- Header -->
+<div class="px-lg py-lg border-b border-outline-variant flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">FinCorp Ledger</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Accounting Suite</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-sm">
+<ul class="flex flex-col">
+<!-- Inactive Tab -->
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span> Dashboard</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">person_book</span> Customers</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">storefront</span> Vendors</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">inventory_2</span> Items</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">category</span> Categories</a></li>
+<!-- Active Tab: Quotations -->
+<li>
+<a class="relative flex items-center gap-md py-sm px-lg text-primary font-bold before:absolute before:left-0 before:h-full before:w-1 before:bg-primary font-label-md text-label-md transition-transform duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">request_quote</span> Quotations
+                    </a>
+</li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span> Invoices</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">payments</span> Payments</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span> Expenses</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">account_balance</span> GST</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#"><span class="material-symbols-outlined text-[20px]">description</span> Documents</a></li>
+<li><a class="flex items-center gap-md py-sm px-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md mt-auto" href="#"><span class="material-symbols-outlined text-[20px]">settings</span> Settings</a></li>
+</ul>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-[280px] w-full min-w-0">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex justify-between items-center h-16 w-full px-lg bg-surface-container-lowest border-b border-outline-variant">
+<!-- Search Bar (on_left) -->
+<div class="flex-1 max-w-md hidden md:block">
+<div class="relative flex items-center w-full h-10 rounded bg-surface-container-low overflow-hidden focus-within:ring-2 focus-within:ring-primary border border-transparent focus-within:border-primary transition-all">
+<div class="grid place-items-center h-full w-12 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="peer h-full w-full outline-none text-sm text-on-surface bg-transparent pr-2 font-body-md text-body-md" id="search" placeholder="Search quotations..." type="text"/>
+</div>
+</div>
+<!-- Mobile Menu Toggle (Visible only on mobile) -->
+<button class="md:hidden text-primary p-sm hover:bg-surface-container rounded-full">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Brand Logo (Mobile only) -->
+<div class="md:hidden font-headline-sm text-headline-sm font-black text-primary">
+                FinCorp Ledger
+            </div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-sm">
+<button class="text-on-surface-variant hover:bg-surface-container-low p-sm rounded-full transition-colors flex items-center justify-center h-10 w-10">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low p-sm rounded-full transition-colors flex items-center justify-center h-10 w-10">
+<span class="material-symbols-outlined text-[20px]">help</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-xs"></div>
+<button class="flex items-center gap-sm hover:opacity-80 transition-opacity">
+<img alt="User Profile" class="h-8 w-8 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a financial accountant in a modern office setting. The lighting is bright and clean, reflecting a corporate environment. The person is wearing a tailored navy blazer. High quality, crisp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDm5qTEH5AeTVGwhTC3Qx5-sd8ZOPSzmf0CKkWaijJjxY3v_4KKpnysbwd_5EYV-YMHqYqVUD8xBc7pyLsGb_wOSDayfYqJmIrkAtU_lGx3TiZfqWdj0YQAOPxbQLO5VOXXrWnt0_V_jGtuSv9WUuMOIB9gfs_gzcov3gGOOOn3UmiVlxXr3DMMJdQXr21nKy4VEVrR9OU7LVNM7aYtQlibsa5w6joZrLkmhKUPUo7R8Y3gnenR_G6e-iQ4bSr0pgJsVHYVj97XJWw"/>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Canvas / Page Content -->
+<div class="flex-1 overflow-y-auto bg-background p-lg">
+<div class="max-w-container-max mx-auto w-full flex flex-col gap-lg">
+<!-- Page Header & Primary Action -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Quotations</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Manage and track your sent quotes.</p>
+</div>
+<button class="bg-primary text-on-primary hover:bg-tertiary transition-colors px-md py-sm rounded-lg font-label-md text-label-md flex items-center gap-sm shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                        Create Quotation
+                    </button>
+</div>
+<!-- Filters & Controls -->
+<div class="flex flex-col md:flex-row justify-between items-center bg-surface-container-lowest p-sm border border-outline-variant rounded-xl shadow-sm gap-md">
+<!-- Status Tabs -->
+<div class="flex overflow-x-auto w-full md:w-auto hide-scrollbar gap-xs p-xs">
+<button class="px-md py-sm rounded-lg bg-surface-container-highest text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors">
+                            All Quotes
+                        </button>
+<button class="px-md py-sm rounded-lg hover:bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap transition-colors">
+                            Drafts
+                        </button>
+<button class="px-md py-sm rounded-lg hover:bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap transition-colors">
+                            Sent
+                        </button>
+<button class="px-md py-sm rounded-lg hover:bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap transition-colors">
+                            Accepted
+                        </button>
+<button class="px-md py-sm rounded-lg hover:bg-surface-container text-on-surface-variant font-label-md text-label-md whitespace-nowrap transition-colors">
+                            Rejected
+                        </button>
+</div>
+<!-- Secondary Actions -->
+<div class="flex items-center gap-sm w-full md:w-auto justify-end px-xs">
+<button class="flex items-center gap-xs px-sm py-sm text-secondary border border-outline-variant rounded hover:bg-surface-container-low transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filter
+                        </button>
+<button class="flex items-center justify-center p-sm text-secondary border border-outline-variant rounded hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-x-auto shadow-sm">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-bright">
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">Quotation #</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">Customer</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold">Date</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold text-right">Total Amount</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold text-center">Status</th>
+<th class="px-md py-sm font-label-md text-label-md text-on-surface-variant font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-data-tabular text-data-tabular text-on-surface">
+<!-- Row 1: Sent -->
+<tr class="border-b border-outline-variant hover:bg-surface transition-colors group">
+<td class="px-md py-[12px] font-medium text-primary">QT-2023-0042</td>
+<td class="px-md py-[12px]">Acme Corp Global</td>
+<td class="px-md py-[12px] text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-md py-[12px] text-right font-semibold">$12,450.00</td>
+<td class="px-md py-[12px] text-center">
+<span class="inline-flex items-center px-sm py-[2px] rounded-full bg-secondary-container text-on-secondary-container font-label-md text-[11px] font-bold">
+                                        Sent
+                                    </span>
+</td>
+<td class="px-md py-[12px] text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Accepted -->
+<tr class="border-b border-outline-variant hover:bg-surface transition-colors group">
+<td class="px-md py-[12px] font-medium text-primary">QT-2023-0041</td>
+<td class="px-md py-[12px]">TechFlow Solutions</td>
+<td class="px-md py-[12px] text-on-surface-variant">Oct 22, 2023</td>
+<td class="px-md py-[12px] text-right font-semibold">$8,200.00</td>
+<td class="px-md py-[12px] text-center">
+<span class="inline-flex items-center px-sm py-[2px] rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-[11px] font-bold">
+                                        Accepted
+                                    </span>
+</td>
+<td class="px-md py-[12px] text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Draft -->
+<tr class="border-b border-outline-variant hover:bg-surface transition-colors group">
+<td class="px-md py-[12px] font-medium text-primary">QT-2023-0040</td>
+<td class="px-md py-[12px]">Nebula Partners LLC</td>
+<td class="px-md py-[12px] text-on-surface-variant">Oct 20, 2023</td>
+<td class="px-md py-[12px] text-right font-semibold">$45,000.00</td>
+<td class="px-md py-[12px] text-center">
+<span class="inline-flex items-center px-sm py-[2px] rounded-full bg-surface-variant text-on-surface-variant font-label-md text-[11px] font-bold">
+                                        Draft
+                                    </span>
+</td>
+<td class="px-md py-[12px] text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Rejected -->
+<tr class="border-b border-outline-variant hover:bg-surface transition-colors group">
+<td class="px-md py-[12px] font-medium text-primary">QT-2023-0039</td>
+<td class="px-md py-[12px]">Meridian Dynamics</td>
+<td class="px-md py-[12px] text-on-surface-variant">Oct 18, 2023</td>
+<td class="px-md py-[12px] text-right font-semibold">$3,150.50</td>
+<td class="px-md py-[12px] text-center">
+<span class="inline-flex items-center px-sm py-[2px] rounded-full bg-error-container text-on-error-container font-label-md text-[11px] font-bold">
+                                        Rejected
+                                    </span>
+</td>
+<td class="px-md py-[12px] text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Sent -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="px-md py-[12px] font-medium text-primary">QT-2023-0038</td>
+<td class="px-md py-[12px]">Vanguard Holdings</td>
+<td class="px-md py-[12px] text-on-surface-variant">Oct 15, 2023</td>
+<td class="px-md py-[12px] text-right font-semibold">$110,200.00</td>
+<td class="px-md py-[12px] text-center">
+<span class="inline-flex items-center px-sm py-[2px] rounded-full bg-secondary-container text-on-secondary-container font-label-md text-[11px] font-bold">
+                                        Sent
+                                    </span>
+</td>
+<td class="px-md py-[12px] text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-xs opacity-0 group-hover:opacity-100 focus:opacity-100">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between px-xs pt-sm pb-lg border-t border-transparent">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Showing 1 to 5 of 42 entries</span>
+<div class="flex gap-xs">
+<button class="p-xs text-on-surface-variant hover:bg-surface-container rounded transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="p-xs text-on-surface-variant hover:bg-surface-container rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

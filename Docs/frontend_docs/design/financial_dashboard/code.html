@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinCorp Ledger - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#515f74",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "primary-container": "#131b2e",
+                        "tertiary-fixed": "#6ffbbe",
+                        "surface": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-container": "#7c839b",
+                        "surface-container": "#eceef0",
+                        "outline-variant": "#c6c6cd",
+                        "tertiary-container": "#002113",
+                        "on-surface-variant": "#45464d",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "surface-tint": "#565e74",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-surface": "#191c1e",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed": "#002113",
+                        "background": "#f7f9fb",
+                        "on-secondary-container": "#57657b",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary": "#000000",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#bec6e0",
+                        "on-tertiary-container": "#009668",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-container-low": "#f2f4f6",
+                        "on-primary-fixed": "#131b2e",
+                        "primary": "#000000",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#d5e3fd",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-fixed": "#dae2fd",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "outline": "#76777d",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#3a485c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "base": "4px",
+                        "md": "16px",
+                        "gutter": "24px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "xs": "4px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-tabular": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "data-tabular": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; color: #191c1e; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid #E2E8F0;
+        }
+        /* Chart Placeholders */
+        .chart-placeholder-line {
+            background: linear-gradient(180deg, rgba(213,227,253,0.3) 0%, rgba(255,255,255,0) 100%);
+            position: relative;
+        }
+        .chart-placeholder-line::after {
+            content: '';
+            position: absolute;
+            bottom: 20%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #000;
+            clip-path: polygon(0 80%, 20% 60%, 40% 70%, 60% 40%, 80% 50%, 100% 20%, 100% 100%, 0 100%);
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-background">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface dark:bg-inverse-surface border-r border-outline-variant dark:border-outline flex flex-col z-50">
+<!-- Brand Header -->
+<div class="h-16 flex items-center px-lg border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-inverse-primary">FinCorp Ledger</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Accounting Suite</p>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 overflow-y-auto py-md flex flex-col gap-xs">
+<!-- Active: Dashboard -->
+<a class="relative flex items-center gap-md py-sm px-lg text-primary dark:text-inverse-primary font-bold before:absolute before:left-0 before:h-full before:w-1 before:bg-primary bg-surface-container hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">person_book</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-md text-label-md">Vendors</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Items</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-label-md text-label-md">Categories</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">request_quote</span>
+<span class="font-label-md text-label-md">Quotations</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Invoices</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Payments</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Expenses</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-label-md text-label-md">GST</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Documents</span>
+</a>
+<a class="flex items-center gap-md py-sm px-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-secondary-container transition-colors mt-auto border-t border-outline-variant pt-sm" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-[280px] h-screen overflow-hidden bg-background">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex justify-between items-center h-16 w-full px-lg bg-surface-container-lowest dark:bg-surface-container-lowest border-b border-outline-variant dark:border-outline">
+<!-- Search -->
+<div class="flex items-center bg-surface-container-low rounded-full px-md py-sm w-96 border border-outline-variant focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant mr-sm">search</span>
+<input class="bg-transparent border-none outline-none text-body-md font-body-md w-full placeholder-on-surface-variant text-on-surface" placeholder="Search transactions, customers, or invoices..." type="text"/>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-md">
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-6 w-[1px] bg-outline-variant mx-sm"></div>
+<div class="flex items-center gap-sm cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="User Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A small circular avatar showing a professional business portrait of an accountant in a modern office setting. High quality, well lit." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjbXhiwruI7_Qjg5DkF9oMBjOTWsYeTXUMSmxVO_FRJdamSw7CM5kn4trUIEitrdjOGxM-YDIze9vqdd0r0n2cyLJQjTCt2h-dYW_rdfBrnusmsbm_gc6KcW3-YQRYrTLoQxHPU4IlHdl52husY274BIqsxJo2gx6SbQYiVepNuRRMrIthJGWr3wB0aFmFrp8I-RLkKY0wp2wO85xGTPU3aXRCmMEs17YhXGFsClvY91o2dORlQFh65G1gsMYMEN8m-r0UBpycI3k"/>
+<span class="font-label-md text-label-md text-primary">Alex Mercer</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<main class="flex-1 overflow-y-auto p-gutter relative">
+<!-- Decorative Background Element -->
+<div class="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-secondary-container/20 to-transparent rounded-full blur-3xl -z-10 pointer-events-none"></div>
+<div class="max-w-[1440px] mx-auto flex flex-col gap-gutter pb-xl">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Financial Overview</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Summary for current fiscal quarter, ending Sep 30.</p>
+</div>
+<div class="flex gap-sm">
+<button class="px-md py-sm bg-surface-container border border-outline-variant rounded flex items-center gap-xs font-label-md text-label-md text-primary hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                            This Quarter
+                        </button>
+<button class="px-md py-sm bg-primary text-on-primary rounded flex items-center gap-xs font-label-md text-label-md hover:opacity-90 transition-opacity shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                            New Transaction
+                        </button>
+</div>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Revenue -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-label-md text-label-md">Total Revenue</span>
+<span class="material-symbols-outlined text-[20px]">trending_up</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary">$124,500.00</div>
+<div class="font-body-sm text-body-sm text-on-tertiary-container flex items-center gap-xs mt-auto">
+<span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                            12.5% from last month
+                        </div>
+</div>
+<!-- Expenses -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-label-md text-label-md">Total Expenses</span>
+<span class="material-symbols-outlined text-[20px]">trending_down</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary">$42,850.25</div>
+<div class="font-body-sm text-body-sm text-error flex items-center gap-xs mt-auto">
+<span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                            3.2% from last month
+                        </div>
+</div>
+<!-- Net Profit -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm border-l-4 border-primary">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-label-md text-label-md">Net Profit</span>
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary">$81,649.75</div>
+<div class="font-body-sm text-body-sm text-on-tertiary-container flex items-center gap-xs mt-auto">
+<span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                            18.4% from last month
+                        </div>
+</div>
+<!-- Receivables -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-label-md text-label-md">Outstanding Receivables</span>
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary">$34,200.00</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 mt-2 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 65%"></div>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-auto">14 invoices pending</div>
+</div>
+<!-- Payables -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-label-md text-label-md">Outstanding Payables</span>
+<span class="material-symbols-outlined text-[20px]">payments</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary">$12,450.00</div>
+<div class="w-full bg-surface-container rounded-full h-1.5 mt-2 overflow-hidden">
+<div class="bg-error h-1.5 rounded-full" style="width: 35%"></div>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-auto">5 bills pending</div>
+</div>
+<!-- GST Liability -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-label-md text-label-md">Est. GST Liability</span>
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary">$8,425.50</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-auto">Due: Oct 20</div>
+</div>
+</div>
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Revenue Trend -->
+<div class="glass-card rounded-xl p-lg flex flex-col min-h-[300px]">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-sm text-headline-sm text-primary">Revenue Trend</h3>
+<button class="p-xs text-on-surface-variant hover:bg-surface-container-low rounded">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex-1 chart-placeholder-line rounded-lg border border-outline-variant/50 relative p-sm flex items-end justify-between">
+<!-- Faux Chart Bars -->
+<div class="w-8 bg-primary/20 rounded-t h-[40%]"></div>
+<div class="w-8 bg-primary/40 rounded-t h-[55%]"></div>
+<div class="w-8 bg-primary/60 rounded-t h-[45%]"></div>
+<div class="w-8 bg-primary/80 rounded-t h-[70%]"></div>
+<div class="w-8 bg-primary rounded-t h-[85%]"></div>
+<div class="w-8 bg-primary rounded-t h-[60%]"></div>
+</div>
+<div class="flex justify-between text-label-md font-label-md text-on-surface-variant mt-sm px-sm">
+<span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span>
+</div>
+</div>
+<!-- Expense Breakdown -->
+<div class="glass-card rounded-xl p-lg flex flex-col min-h-[300px]">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-sm text-headline-sm text-primary">Expense Analysis</h3>
+<button class="p-xs text-on-surface-variant hover:bg-surface-container-low rounded">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="flex-1 flex items-center justify-center gap-lg">
+<!-- Faux Donut -->
+<div class="w-32 h-32 rounded-full border-[16px] border-primary relative flex items-center justify-center">
+<div class="absolute inset-[-16px] rounded-full border-[16px] border-secondary border-t-transparent border-l-transparent transform rotate-45"></div>
+<div class="absolute inset-[-16px] rounded-full border-[16px] border-surface-container-highest border-b-transparent border-l-transparent transform -rotate-45"></div>
+<span class="font-headline-sm text-headline-sm text-primary">42k</span>
+</div>
+<!-- Legend -->
+<div class="flex flex-col gap-sm">
+<div class="flex items-center gap-xs text-body-sm font-body-sm">
+<div class="w-3 h-3 rounded-sm bg-primary"></div><span>Payroll (55%)</span>
+</div>
+<div class="flex items-center gap-xs text-body-sm font-body-sm">
+<div class="w-3 h-3 rounded-sm bg-secondary"></div><span>Software (25%)</span>
+</div>
+<div class="flex items-center gap-xs text-body-sm font-body-sm">
+<div class="w-3 h-3 rounded-sm bg-surface-container-highest"></div><span>Office (20%)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Invoice Status Widget -->
+<div class="glass-card rounded-xl p-lg flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-md">Invoice Status</h3>
+<div class="space-y-sm flex-1">
+<div class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-2 h-2 rounded-full bg-on-tertiary-container"></div>
+<span class="font-body-md text-body-md text-on-surface">Paid</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="font-data-tabular text-data-tabular">42 Invoices</span>
+<span class="font-headline-sm text-headline-sm text-primary w-24 text-right">$85,400</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="font-body-md text-body-md text-on-surface">Sent</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="font-data-tabular text-data-tabular">12 Invoices</span>
+<span class="font-headline-sm text-headline-sm text-primary w-24 text-right">$28,500</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="font-body-md text-body-md text-on-surface">Overdue</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="font-data-tabular text-data-tabular">2 Invoices</span>
+<span class="font-headline-sm text-headline-sm text-error w-24 text-right">$5,700</span>
+</div>
+</div>
+<div class="flex items-center justify-between p-sm hover:bg-surface-container-low rounded-lg transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-2 h-2 rounded-full bg-surface-container-highest"></div>
+<span class="font-body-md text-body-md text-on-surface">Draft</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="font-data-tabular text-data-tabular">5 Invoices</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant w-24 text-right">$4,900</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Customers -->
+<div class="glass-card rounded-xl p-lg flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-sm text-headline-sm text-primary">Top Customers</h3>
+<a class="font-label-md text-label-md text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant">
+<th class="pb-sm font-label-md text-label-md text-on-surface-variant">Customer</th>
+<th class="pb-sm font-label-md text-label-md text-on-surface-variant text-right">YTD Value</th>
+<th class="pb-sm font-label-md text-label-md text-on-surface-variant text-right">Status</th>
+</tr>
+</thead>
+<tbody class="text-data-tabular">
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+<td class="py-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">AC</div>
+<span class="font-body-sm">Acme Corp</span>
+</div>
+</td>
+<td class="py-md text-right text-primary font-medium">$45,000.00</td>
+<td class="py-md text-right">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-tertiary-container/10 text-on-tertiary-container">Current</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+<td class="py-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">GL</div>
+<span class="font-body-sm">Global Logistics</span>
+</div>
+</td>
+<td class="py-md text-right text-primary font-medium">$32,500.00</td>
+<td class="py-md text-right">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-tertiary-container/10 text-on-tertiary-container">Current</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+<td class="py-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">TI</div>
+<span class="font-body-sm">Tech Innovators</span>
+</div>
+</td>
+<td class="py-md text-right text-primary font-medium">$28,900.00</td>
+<td class="py-md text-right">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-error/10 text-error">1 Overdue</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-md">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold text-xs">SW</div>
+<span class="font-body-sm">Skyline Web</span>
+</div>
+</td>
+<td class="py-md text-right text-primary font-medium">$15,200.00</td>
+<td class="py-md text-right">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase bg-tertiary-container/10 text-on-tertiary-container">Current</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,346 @@
+Project FinanceBillingPlatform {
+  database_type: "PostgreSQL"
+}
+
+Table organizations {
+  id uuid [pk]
+
+  name varchar
+  gst_number varchar
+
+  email varchar
+  phone varchar
+
+  address_id uuid
+
+  invoice_prefix varchar
+  quotation_prefix varchar
+
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table addresses {
+  id uuid [pk]
+
+  line1 varchar
+  line2 varchar
+
+  city varchar
+  state varchar
+  country varchar
+
+  postal_code varchar
+
+  created_at timestamp
+}
+
+Table bank_accounts {
+  id uuid [pk]
+
+  holder_name varchar
+
+  bank_name varchar
+
+  account_number varchar
+  ifsc_code varchar
+
+  upi_id varchar
+
+  created_at timestamp
+}
+
+Table users {
+  id uuid [pk]
+
+  organization_id uuid
+
+  role varchar
+
+  name varchar
+  email varchar
+  password_hash varchar
+
+  is_active boolean
+
+  created_at timestamp
+}
+
+Table parties {
+  id uuid [pk]
+
+  organization_id uuid
+
+  type varchar
+  // customer | vendor | both
+
+  business_name varchar
+
+  contact_person varchar
+
+  gst_number varchar
+
+  email varchar
+  phone varchar
+
+  address_id uuid
+  bank_account_id uuid
+
+  notes text
+
+  created_at timestamp
+}
+
+Table categories {
+  id uuid [pk]
+
+  organization_id uuid
+
+  type varchar
+  // product | service | expense
+
+  name varchar
+
+  created_at timestamp
+}
+
+Table items {
+  id uuid [pk]
+
+  organization_id uuid
+
+  type varchar
+  // product | service
+
+  category_id uuid
+
+  name varchar
+
+  description text
+
+  unit varchar
+
+  sale_price decimal
+  gst_rate decimal
+
+  is_active boolean
+
+  created_at timestamp
+}
+
+Table quotations {
+  id uuid [pk]
+
+  organization_id uuid
+
+  quotation_number varchar
+
+  customer_id uuid
+
+  quotation_date date
+  valid_until date
+
+  status varchar
+  // draft | sent | accepted | rejected
+
+  notes text
+
+  subtotal decimal
+  gst_amount decimal
+  total_amount decimal
+
+  created_by uuid
+
+  created_at timestamp
+}
+
+Table quotation_items {
+  id uuid [pk]
+
+  quotation_id uuid
+
+  item_id uuid
+
+  description text
+
+  quantity decimal
+
+  unit_price decimal
+
+  gst_rate decimal
+
+  gst_amount decimal
+
+  line_total decimal
+}
+
+Table invoices {
+  id uuid [pk]
+
+  organization_id uuid
+
+  invoice_number varchar
+
+  customer_id uuid
+
+  quotation_id uuid [null]
+
+  invoice_date date
+  due_date date
+
+  status varchar
+  // draft | sent | paid | overdue | cancelled
+
+  notes text
+
+  subtotal decimal
+  gst_amount decimal
+  total_amount decimal
+
+  created_by uuid
+
+  created_at timestamp
+}
+
+Table invoice_items {
+  id uuid [pk]
+
+  invoice_id uuid
+
+  item_id uuid
+
+  description text
+
+  quantity decimal
+
+  unit_price decimal
+
+  gst_rate decimal
+
+  gst_amount decimal
+
+  line_total decimal
+}
+
+Table payments {
+  id uuid [pk]
+
+  organization_id uuid
+
+  invoice_id uuid
+
+  customer_id uuid
+
+  payment_date date
+
+  amount decimal
+
+  payment_method varchar
+
+  reference_number varchar
+
+  notes text
+
+  created_at timestamp
+}
+
+Table expenses {
+  id uuid [pk]
+
+  organization_id uuid
+
+  vendor_id uuid
+
+  category_id uuid
+
+  expense_date date
+
+  description text
+
+  amount decimal
+
+  gst_amount decimal
+
+  payment_method varchar
+
+  reference_number varchar
+
+  created_by uuid
+
+  created_at timestamp
+}
+
+Table documents {
+  id uuid [pk]
+
+  organization_id uuid
+
+  uploaded_by uuid
+
+  document_type varchar
+  // invoice | quotation | receipt | bill
+
+  file_url text
+
+  status varchar
+  // uploaded | processing | completed | failed
+
+  created_at timestamp
+}
+
+Table extracted_documents {
+  id uuid [pk]
+
+  document_id uuid
+
+  extracted_data json
+
+  confidence_score decimal
+
+  reviewed boolean
+
+  created_at timestamp
+}
+
+Ref: organizations.address_id > addresses.id
+
+Ref: parties.address_id > addresses.id
+Ref: parties.bank_account_id > bank_accounts.id
+
+Ref: users.organization_id > organizations.id
+
+Ref: parties.organization_id > organizations.id
+
+Ref: categories.organization_id > organizations.id
+
+Ref: items.organization_id > organizations.id
+Ref: items.category_id > categories.id
+
+Ref: quotations.organization_id > organizations.id
+Ref: quotations.customer_id > parties.id
+Ref: quotations.created_by > users.id
+
+Ref: quotation_items.quotation_id > quotations.id
+Ref: quotation_items.item_id > items.id
+
+Ref: invoices.organization_id > organizations.id
+Ref: invoices.customer_id > parties.id
+Ref: invoices.quotation_id > quotations.id
+Ref: invoices.created_by > users.id
+
+Ref: invoice_items.invoice_id > invoices.id
+Ref: invoice_items.item_id > items.id
+
+Ref: payments.organization_id > organizations.id
+Ref: payments.invoice_id > invoices.id
+Ref: payments.customer_id > parties.id
+
+Ref: expenses.organization_id > organizations.id
+Ref: expenses.vendor_id > parties.id
+Ref: expenses.category_id > categories.id
+Ref: expenses.created_by > users.id
+
+Ref: documents.organization_id > organizations.id
+Ref: documents.uploaded_by > users.id
+
+Ref: extracted_documents.document_id > documents.id
