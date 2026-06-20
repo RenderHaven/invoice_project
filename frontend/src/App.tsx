@@ -17,6 +17,9 @@ export default function App() {
       <Route
         path="/*"
         element={
+          !hasToken() ? (
+            <Navigate to="/login" replace />
+          ) : (
           <AppLayout>
             <Routes>
               <Route path="dashboard" element={<DashboardPage />} />
@@ -35,6 +38,7 @@ export default function App() {
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </AppLayout>
+          )
         }
       />
     </Routes>

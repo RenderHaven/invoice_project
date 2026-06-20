@@ -64,14 +64,15 @@ async def extract_document(file_bytes: bytes, mime_type: str) -> dict:
         }
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel(settings.GEMINI_MODEL)
         b64_data = base64.b64encode(file_bytes).decode("utf-8")
 
         response = model.generate_content(
             [
                 {"inline_data": {"mime_type": mime_type, "data": b64_data}},
                 EXTRACTION_PROMPT,
-            ]
+            ],
+            generation_config={"response_mime_type": "application/json"},
         )
 
         text = response.text.strip()

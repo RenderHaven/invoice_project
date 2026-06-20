@@ -7,7 +7,7 @@ import { saveSession } from '../lib/session';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@example.com');
+  const [email, setEmail] = useState('admin@testcompay.com');
   const [password, setPassword] = useState('Test@1234');
   const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'error'; message?: string }>({ type: 'idle' });
 
@@ -114,7 +114,7 @@ function AuthShell({
             <Building2 size={20} />
           </div>
           <div>
-            <p className="text-xl font-bold">FinCorp Ledger</p>
+            <p className="text-xl font-bold">RenderHaven</p>
             <p className="text-sm text-white/70">Accounting Suite</p>
           </div>
         </div>

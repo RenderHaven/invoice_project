@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, apiBlob } from './client';
 import type {
   ApiCategory,
   ApiDocument,
@@ -87,7 +87,7 @@ export const endpoints = {
   acceptQuotation: (id: string) => api.post<ApiQuotation>(`/quotations/${id}/accept`),
   rejectQuotation: (id: string) => api.post<ApiQuotation>(`/quotations/${id}/reject`),
   convertQuotation: (id: string) => api.post<ApiInvoice>(`/quotations/${id}/convert`),
-  quotationPdfUrl: (id: string) => `/api/v1/quotations/${id}/pdf`,
+  quotationPdf: (id: string) => apiBlob(`/quotations/${id}/pdf`),
 
   // ---- Invoices ----
   invoices: (status?: string) => api.get<ApiInvoice[]>(`/invoices${qs({ status })}`),
@@ -97,7 +97,7 @@ export const endpoints = {
   markInvoiceSent: (id: string) => api.post<ApiInvoice>(`/invoices/${id}/mark-sent`),
   markInvoicePaid: (id: string) => api.post<ApiInvoice>(`/invoices/${id}/mark-paid`),
   cancelInvoice: (id: string) => api.post<ApiInvoice>(`/invoices/${id}/cancel`),
-  invoicePdfUrl: (id: string) => `/api/v1/invoices/${id}/pdf`,
+  invoicePdf: (id: string) => apiBlob(`/invoices/${id}/pdf`),
 
   // ---- Payments ----
   payments: (invoiceId?: string) => api.get<ApiPayment[]>(`/payments${qs({ invoice_id: invoiceId })}`),
@@ -116,6 +116,7 @@ export const endpoints = {
   extractDocument: (id: string) => api.post(`/documents/${id}/extract`),
   reprocessDocument: (id: string) => api.post(`/documents/${id}/reprocess`),
   documentExtraction: (id: string) => api.get(`/documents/${id}/extraction`),
+  deleteDocument: (id: string) => api.delete<{ message: string }>(`/documents/${id}`),
 
   // ---- Dashboard ----
   dashboard: () => api.get<DashboardSummary>('/dashboard'),

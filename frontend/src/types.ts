@@ -339,6 +339,7 @@ export type ApiDocument = {
   uploaded_by: Id;
   document_type: 'invoice' | 'quotation' | 'receipt' | 'bill' | string;
   file_url: string | null;
+  file_name: string | null;
   status: 'uploaded' | 'processing' | 'completed' | 'failed' | string;
   created_at: string;
 };

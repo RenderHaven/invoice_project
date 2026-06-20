@@ -8,16 +8,29 @@ export function Button({
   variant = 'primary',
   className,
   type = 'button',
+  onClick,
+  disabled,
+  form,
+  title,
 }: {
   children: ReactNode;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   className?: string;
   type?: 'button' | 'submit';
+  onClick?: () => void;
+  disabled?: boolean;
+  form?: string;
+  title?: string;
 }) {
   return (
     <button
       type={type}
+      onClick={onClick}
+      disabled={disabled}
+      form={form}
+      title={title}
       className={clsx(
+        disabled && 'cursor-not-allowed opacity-50',
         'inline-flex min-h-9 items-center justify-center gap-2 rounded px-3 py-2 text-sm font-semibold transition',
         variant === 'primary' && 'bg-ink text-white hover:bg-slate',
         variant === 'secondary' && 'border border-line bg-white text-slate hover:bg-surface',
@@ -245,7 +258,7 @@ export function Alert({ tone = 'info', children }: { tone?: StatusTone; children
 
 export function useToast() {
   const [toast, setToast] = useState<{ tone: StatusTone; message: string } | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   function show(tone: StatusTone, message: string) {
     setToast({ tone, message });
@@ -260,6 +273,16 @@ export function useToast() {
   ) : null;
 
   return { show, toast: node };
+}
+
+export function InlineSpinner({ className }: { className?: string }) {
+  return (
+    <span
+      className={clsx('inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent align-[-2px]', className)}
+      role="status"
+      aria-label="Loading"
+    />
+  );
 }
 
 export function Spinner({ label = 'Loading...' }: { label?: string }) {

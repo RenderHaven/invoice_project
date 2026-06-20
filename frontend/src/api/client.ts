@@ -33,6 +33,21 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   return (payload?.data ?? payload) as T;
 }
 
+/** Fetch a binary response (e.g. a PDF) with the auth header attached. */
+export async function apiBlob(path: string): Promise<Blob> {
+  const headers = new Headers();
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, { headers });
+  if (!response.ok) {
+    throw new Error(`Request failed with ${response.status}`);
+  }
+  return response.blob();
+}
+
 export const api = {
   get: <T>(path: string) => apiRequest<T>(path),
   post: <T>(path: string, body?: unknown) =>

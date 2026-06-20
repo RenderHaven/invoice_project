@@ -61,7 +61,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <Building2 size={19} />
           </div>
           <div>
-            <p className="text-lg font-bold leading-tight">FinCorp Ledger</p>
+            <p className="text-lg font-bold leading-tight">RenderHaven</p>
             <p className="label">Accounting Suite</p>
           </div>
         </div>

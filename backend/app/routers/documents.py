@@ -1,7 +1,8 @@
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
@@ -11,7 +12,7 @@ from app.models.document import Document, ExtractedDocument
 from app.models.invoice import Invoice, InvoiceItem
 from app.models.expense import Expense
 from app.schemas.document import DocumentResponse, ExtractionResponse
-from app.services import cloudinary_service
+from app.services import storage_service
 from app.services.ai_extraction_service import extract_document
 from app.utils.number_generator import generate_invoice_number
 from app.utils.gst_calculator import calculate_line_totals, calculate_document_totals
@@ -37,14 +38,20 @@ def _doc_base(org_id):
 @router.post("/upload", response_model=dict, status_code=201)
 async def upload_document(
     file: UploadFile = File(...),
-    document_type: str = Query("invoice"),
+    document_type: str = Form("invoice"),
     current_user: User = Depends(require_admin_or_manager),
     db: AsyncSession = Depends(get_db),
 ):
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail="Only PDF, JPG, PNG files are supported")
 
-    upload_result = await cloudinary_service.upload_file(file, folder="finance_platform/documents")
+    try:
+        # Store locally and serve from our own backend. Cloudinary blocks PDF delivery
+        # by default, which breaks both in-browser viewing and extraction.
+        upload_result = await storage_service.save_local(file)
+    except Exception as exc:  # pragma: no cover - storage failure
+        raise HTTPException(status_code=502, detail=f"File storage failed: {exc}")
+
     doc = Document(
         id=uuid.uuid4(),
         organization_id=current_user.organization_id,
@@ -60,6 +67,23 @@ async def upload_document(
     await db.refresh(doc)
     res = await db.execute(_doc_base(current_user.organization_id).where(Document.id == doc.id))
     return {"success": True, "data": DocumentResponse.model_validate(res.scalar_one()).model_dump()}
+
+
+@router.get("/files/{filename}")
+async def serve_local_file(filename: str):
+    """Serve a locally-stored document. Public so it can be opened directly in a
+    browser tab (an <a> link can't send the auth header), and rendered inline."""
+    import mimetypes
+
+    path = storage_service.local_file_path(filename)
+    if not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    media_type, _ = mimetypes.guess_type(str(path))
+    return FileResponse(
+        str(path),
+        media_type=media_type or "application/octet-stream",
+        headers={"Content-Disposition": "inline"},
+    )
 
 
 @router.get("", response_model=dict)
@@ -91,6 +115,31 @@ async def get_document(
     return {"success": True, "data": DocumentResponse.model_validate(doc).model_dump()}
 
 
+@router.delete("/{document_id}", response_model=dict)
+async def delete_document(
+    document_id: uuid.UUID,
+    current_user: User = Depends(require_admin_or_manager),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Document).where(Document.id == document_id, Document.organization_id == current_user.organization_id)
+    )
+    doc = result.scalar_one_or_none()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # remove the extraction row (FK) and the stored file, then the document
+    await db.execute(delete(ExtractedDocument).where(ExtractedDocument.document_id == document_id))
+    if storage_service.is_local(doc.public_id):
+        try:
+            storage_service.delete_file(doc.public_id)
+        except Exception:
+            pass
+    await db.delete(doc)
+    await db.commit()
+    return {"success": True, "data": None}
+
+
 async def _run_extraction(document_id: uuid.UUID, current_user: User, db: AsyncSession) -> dict:
     result = await db.execute(
         select(Document).where(Document.id == document_id, Document.organization_id == current_user.organization_id)
@@ -102,12 +151,23 @@ async def _run_extraction(document_id: uuid.UUID, current_user: User, db: AsyncS
     doc.status = "processing"
     await db.flush()
 
-    import httpx
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(doc.file_url)
-        file_bytes = resp.content
+    # Read the file bytes. Local documents are read straight from disk; any remote
+    # URL (legacy Cloudinary) is fetched over HTTP.
+    if storage_service.is_local(doc.public_id):
+        file_bytes = storage_service.local_file_path(doc.public_id).read_bytes()
+    else:
+        import httpx
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            resp = await client.get(doc.file_url)
+            file_bytes = resp.content
 
-    mime_type = "application/pdf" if doc.file_url.endswith(".pdf") else "image/jpeg"
+    name = (doc.file_url or "").lower()
+    if name.endswith(".pdf"):
+        mime_type = "application/pdf"
+    elif name.endswith(".png"):
+        mime_type = "image/png"
+    else:
+        mime_type = "image/jpeg"
     extraction_result = await extract_document(file_bytes, mime_type)
 
     existing = await db.execute(
