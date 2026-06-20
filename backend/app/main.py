@@ -63,6 +63,10 @@ app.include_router(documents.router, prefix=PREFIX)
 async def health_check():
     return {"status": "ok", "version": settings.APP_VERSION}
 
+@app.get(f"{PREFIX}/health", tags=["Health"])
+async def api_health_check():
+    return {"status": "ok", "version": settings.APP_VERSION}
+
 
 @app.get("/", tags=["Root"])
 async def root():
